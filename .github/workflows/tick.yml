@@ -1,0 +1,22 @@
+name: one more day
+
+on:
+  schedule:
+    - cron: "17 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: draw
+        run: echo "msg=$(node generate.mjs)" >> "$GITHUB_OUTPUT"
+      - run: |
+          git config user.name "retrocodes12"
+          git config user.email "88876293+retrocodes12@users.noreply.github.com"
+          git add countdown.svg
+          git diff --cached --quiet || { git commit -m "${{ steps.draw.outputs.msg }}"; git push; }
