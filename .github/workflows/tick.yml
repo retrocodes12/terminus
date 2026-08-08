@@ -15,8 +15,13 @@ jobs:
       - uses: actions/checkout@v4
       - id: draw
         run: echo "msg=$(node generate.mjs)" >> "$GITHUB_OUTPUT"
+      # Social cards can't read SVG, so rasterize the same poster. Never fatal.
+      - run: |
+          google-chrome --headless=new --disable-gpu --no-sandbox --hide-scrollbars \
+            --window-size=880,462 --default-background-color=00000000 \
+            --screenshot=og.png "$PWD/countdown.svg" || true
       - run: |
           git config user.name "retrocodes12"
           git config user.email "88876293+retrocodes12@users.noreply.github.com"
-          git add countdown.svg
+          git add countdown.svg og.png
           git diff --cached --quiet || { git commit -m "${{ steps.draw.outputs.msg }}"; git push; }
