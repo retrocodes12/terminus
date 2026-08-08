@@ -2,10 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>terminus</title>
-<meta name="description" content="One light goes out every week.">
+<meta name="description" content="One light goes out every week. 522 of them, and then the 2020s are over.">
+<meta name="theme-color" content="#101113">
+<meta property="og:type" content="website">
+<meta property="og:title" content="terminus">
+<meta property="og:description" content="One light goes out every week. 522 of them, and then the 2020s are over.">
+<meta property="og:url" content="https://retrocodes12.github.io/terminus/">
+<meta property="og:image" content="https://retrocodes12.github.io/terminus/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="terminus">
+<meta name="twitter:description" content="One light goes out every week.">
+<meta name="twitter:image" content="https://retrocodes12.github.io/terminus/og.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23101113'/%3E%3Crect x='5' y='5' width='6' height='6' fill='%23FF4D00'/%3E%3C/svg%3E">
+<link rel="preload" href="font/archivo-expanded-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
   @font-face {
     font-family: "Archivo";
@@ -15,11 +26,15 @@
     src: url("font/archivo-expanded-latin.woff2") format("woff2");
   }
   :root {
+    color-scheme: dark;
     --bg: #101113;
     --ink: #EDEAE6;
     --muted: #8A867D;
     --spent: #2E3033;
     --accent: #FF4D00;
+    --pad: clamp(20px, 6vw, 96px);
+    accent-color: var(--accent);
+    scrollbar-color: var(--spent) var(--bg);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -31,92 +46,203 @@
     font-stretch: 125%;
     display: flex;
     flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom);
   }
   ::selection { background: var(--accent); color: var(--bg); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
   main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding: clamp(48px, 10vh, 120px) clamp(20px, 6vw, 96px) 0;
+    padding: clamp(18px, 3.5vh, 34px) var(--pad) 0;
   }
   h1 {
-    font-size: clamp(42px, 10vw, 124px);
+    margin-top: clamp(28px, 7vh, 92px);
+    font-size: clamp(40px, 9.6vw, 118px);
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 0.95;
+    text-wrap: balance;
   }
   h1 .dark { color: var(--muted); }
   .clock {
-    margin-top: clamp(16px, 3vh, 36px);
-    font-size: clamp(14px, 2.2vw, 22px);
+    margin-top: clamp(14px, 2.6vh, 30px);
+    font-size: clamp(13px, 1.9vw, 20px);
     font-weight: 500;
     letter-spacing: 0.14em;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
   .clock b { color: var(--ink); font-weight: 500; }
-  .caption {
-    margin-top: auto;
-    padding: clamp(24px, 6vh, 64px) 0 18px;
+
+  /* Standing statement and the way out, on the page's top edge. */
+  .rail {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 24px;
     font-size: 11.5px;
     font-weight: 500;
     letter-spacing: 0.14em;
     color: var(--muted);
   }
+  .rail a {
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-color: var(--spent);
+    text-underline-offset: 5px;
+    transition: color 140ms ease-out, text-decoration-color 140ms ease-out;
+  }
+  .rail a:hover { color: var(--ink); text-decoration-color: var(--accent); }
+
+  /* Hugs the wall, so the eye barely travels from the cell to its answer. */
+  .readout {
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px clamp(16px, 3vw, 40px);
+    min-height: 2.2em;
+    padding: clamp(24px, 5vh, 56px) 0 14px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .readout .week { color: var(--ink); }
+  .readout.is-burning .state { color: var(--accent); }
+
+  /* 522 factors cleanly, so the wall refolds to the viewport: 58x9, 29x18, 18x29. */
   #wall {
-    flex: none;
     display: grid;
     grid-template-columns: repeat(58, 1fr);
     gap: 0.6vw;
-    width: 100%;
-    padding: 0 2px 2px;
+    padding: 0 var(--pad) max(20px, env(safe-area-inset-bottom));
+    cursor: crosshair;
   }
   #wall i {
     aspect-ratio: 1;
     background: var(--ink);
+    transition: outline-color 90ms ease-out;
+    outline: 1.5px solid transparent;
+    outline-offset: 2px;
   }
   #wall i.spent { background: none; box-shadow: inset 0 0 0 1px var(--spent); }
   #wall i.now { background: var(--accent); animation: breathe 4s ease-in-out infinite; }
-  @keyframes breathe { 50% { opacity: 0.35; } }
+  #wall i.mark { outline-color: var(--ink); }
+  @keyframes breathe { 50% { opacity: 0.34; } }
+
+  /* The premise, staged once: every dead week extinguishes in a left-to-right sweep. */
+  @keyframes die {
+    from { background: var(--ink); box-shadow: inset 0 0 0 1px transparent; }
+    to   { background: none; box-shadow: inset 0 0 0 1px var(--spent); }
+  }
+  .arrive #wall i.spent {
+    animation: die 240ms cubic-bezier(0.2, 0, 0, 1) both;
+    animation-delay: calc(var(--i) * 1.7ms);
+  }
+
+  @media (max-width: 1024px) {
+    #wall { grid-template-columns: repeat(29, 1fr); gap: 0.9vw; }
+  }
+  /* The 18x29 fold is tall, so the type block gives up its air to keep one screen. */
+  @media (max-width: 640px) {
+    #wall { grid-template-columns: repeat(18, 1fr); gap: 1.4vw; }
+    .rail { font-size: 10.5px; letter-spacing: 0.08em; gap: 8px 16px; }
+    h1 { margin-top: 20px; }
+    .clock { margin-top: 10px; }
+    .readout {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      min-height: 3.4em;
+      padding: 18px 0 12px;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     #wall i.now { animation: none; }
-  }
-  @media (max-width: 640px) {
-    #wall { grid-template-columns: repeat(29, 1fr); gap: 1.1vw; }
+    .arrive #wall i.spent { animation: none; }
+    * { transition-duration: 1ms !important; }
   }
 </style>
 </head>
 <body>
 <main>
+  <p class="rail">
+    <span>ONE LIGHT GOES OUT EVERY WEEK</span>
+    <a href="https://github.com/retrocodes12/terminus">SOURCE</a>
+  </p>
   <h1 id="head">&nbsp;<br>&nbsp;</h1>
   <p class="clock" id="clock" aria-hidden="true"></p>
-  <p class="caption">ONE LIGHT GOES OUT EVERY WEEK</p>
+  <p class="readout" id="readout" role="status" aria-live="polite" aria-atomic="true"></p>
 </main>
-<div id="wall" role="img" aria-label="A wall of 522 lights, one for each week of the 2020s. The dead ones stay dark."></div>
+<div id="wall" tabindex="0" role="group"
+     aria-label="522 lights, one for each week of the 2020s. Arrow keys read a week."></div>
 <script>
   const DAY = 86400000, WEEK = 7 * DAY;
   const START = Date.UTC(2020, 0, 1), TARGET = Date.UTC(2030, 0, 1);
   const TOTAL = Math.ceil((TARGET - START) / WEEK); // 522
+  const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
   const head = document.getElementById("head");
   const clock = document.getElementById("clock");
+  const readout = document.getElementById("readout");
   const wall = document.getElementById("wall");
   const fmt = n => n.toLocaleString("en-US");
   const pad = n => String(n).padStart(2, "0");
-  let litWeek = -1;
+  const date = ms => { const d = new Date(ms);
+    return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); };
+
+  let cells = [], burning = -1, cursor = null, over = false;
 
   function build(now) {
     const spent = Math.min(Math.floor((now - START) / WEEK), TOTAL - 1);
-    if (spent === litWeek) return;
-    litWeek = spent;
-    const over = now >= TARGET;
-    wall.replaceChildren(...Array.from({ length: TOTAL }, (_, i) => {
+    if (spent === burning) return;
+    burning = spent;
+    over = now >= TARGET;
+    cells = Array.from({ length: TOTAL }, (_, i) => {
       const c = document.createElement("i");
+      c.style.setProperty("--i", i);
+      c.dataset.i = i;
       if (!over && i === spent) c.className = "now";
       else if (i < spent || over) c.className = "spent";
       return c;
-    }));
+    });
+    wall.replaceChildren(...cells);
+    describe(null);
   }
+
+  // The payoff: every cell is a real week, and it will tell you which one.
+  function describe(i) {
+    const at = i == null ? burning : i;
+    const from = START + at * WEEK;
+    const to = Math.min(from + WEEK - DAY, TARGET - DAY);
+    const state = over || at < burning ? "SPENT"
+      : at === burning ? "BURNING"
+      : (at - burning) + (at - burning === 1 ? " WEEK OUT" : " WEEKS OUT");
+    readout.classList.toggle("is-burning", state === "BURNING");
+    readout.innerHTML = '<span class="week">WEEK ' + (at + 1) + ' OF ' + TOTAL + '</span>' +
+      '<span>' + date(from) + ' &ndash; ' + date(to) + '</span>' +
+      '<span class="state">' + state + '</span>';
+    cells.forEach(c => c.classList.remove("mark"));
+    if (i != null && cells[i]) cells[i].classList.add("mark");
+  }
+
+  const indexOf = t => (t && t.tagName === "I") ? +t.dataset.i : -1;
+  wall.addEventListener("pointermove", e => { const i = indexOf(e.target); if (i > -1) describe(cursor = i); });
+  wall.addEventListener("pointerdown", e => { const i = indexOf(e.target); if (i > -1) describe(cursor = i); });
+  wall.addEventListener("pointerleave", () => { if (document.activeElement !== wall) describe(cursor = null); });
+  wall.addEventListener("blur", () => describe(cursor = null));
+  const cols = () => getComputedStyle(wall).gridTemplateColumns.split(" ").length;
+  wall.addEventListener("keydown", e => {
+    const c = cols();
+    const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -c, ArrowDown: c }[e.key];
+    if (!step && e.key !== "Home" && e.key !== "End") return;
+    e.preventDefault();
+    const base = cursor == null ? burning : cursor;
+    const next = e.key === "Home" ? 0 : e.key === "End" ? TOTAL - 1 : base + step;
+    describe(cursor = Math.max(0, Math.min(TOTAL - 1, next)));
+  });
 
   function tick() {
     const now = Date.now();
@@ -124,20 +250,24 @@
     if (now >= TARGET) {
       head.innerHTML = 'the wall<br><span class="dark">is dark.</span>';
       clock.textContent = "";
-      document.querySelector(".caption").textContent = "ALL 522 LIGHTS ARE OUT";
+      document.querySelector(".rail span").textContent = "ALL 522 LIGHTS ARE OUT";
       return;
     }
     const left = TARGET - now;
-    const days = Math.floor(left / DAY);
     const h = Math.floor(left % DAY / 3600000);
     const m = Math.floor(left % 3600000 / 60000);
     const s = Math.floor(left % 60000 / 1000);
     head.innerHTML = fmt(Math.ceil(left / DAY)) + ' days<br><span class="dark">then dark.</span>';
-    clock.innerHTML = "<b>" + fmt(days) + "</b> D <b>" + pad(h) + "</b> H <b>" +
+    clock.innerHTML = "<b>" + fmt(Math.floor(left / DAY)) + "</b> D <b>" + pad(h) + "</b> H <b>" +
       pad(m) + "</b> M <b>" + pad(s) + "</b> S";
     setTimeout(tick, 1000 - now % 1000);
   }
   tick();
+  // Staged once on arrival, then dropped so a week rollover doesn't replay it.
+  requestAnimationFrame(() => {
+    document.body.classList.add("arrive");
+    setTimeout(() => document.body.classList.remove("arrive"), 1400);
+  });
 </script>
 </body>
 </html>
